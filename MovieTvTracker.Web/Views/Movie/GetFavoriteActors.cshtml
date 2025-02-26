@@ -1,0 +1,83 @@
+﻿@model Media;
+
+@{
+    ViewData["Title"] = "GetFavoriteActors";
+}
+
+<h2>My Favorite Actors:</h2>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-header">Favorite Actors Information:</div>
+    <div class="card-body">
+        <li>Actor Count: @Model.FavoriteActorResults.Count()</li>
+    </div>
+</div>
+
+<p></p>
+
+<h4>Actors:</h4>
+
+<p></p>
+
+<table class="siteTheme" style="width:100%">
+    <thead>
+        <tr>
+            <th class="siteTheme">
+                Poster:
+            </th>
+            <th class="siteTheme">
+                Name:
+            </th>
+            <th class="siteTheme">
+                TMDB Popularity:
+            </th>
+            <th class="siteTheme">
+                Known For:
+            </th>
+            <th class="siteTheme">
+                Other:
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model.FavoriteActorResults.OrderByDescending(item => item.PersonIdResult.popularity))
+        {
+            <tr>
+                <td class="siteTheme" style="width:73px;">
+                    @{
+                        string url = "https://image.tmdb.org/t/p/original" + obj.PersonIdResult.profile_path;
+
+                        <a href="@Url.Action("GetUserPersonSelectionById", "Movie", new { id = obj.PersonIdResult.id })">
+
+                            @if (string.IsNullOrEmpty(obj.PersonIdResult.profile_path))
+                            {
+                                <img id="Cinema.jpg" class="myFavoriteActorsImgSize" src="~/Images/Cinema.jpg" />
+                            }
+                            else
+                            {
+                                <img src="@url" class="myFavoriteActorsImgSize" />
+                            }
+
+                        </a>
+                    }
+                </td>
+                <td class="siteTheme">
+                    @obj.PersonIdResult.name
+                </td>
+                <td class="siteTheme" style="text-align: center">
+                    @{
+                        @Math.Round(obj.PersonIdResult.popularity, 0);
+                    }
+                </td>
+                <td class="siteTheme">
+                    @obj.KnownForMovies
+                </td>
+                <td class="siteTheme">
+                    <a class="btn btn-primary" asp-controller="Movie" asp-action="DeleteFavoriteActor" asp-route-id="@obj.PersonIdResult.id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

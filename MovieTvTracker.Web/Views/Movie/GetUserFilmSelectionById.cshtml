@@ -1,0 +1,208 @@
+﻿@using TmdbApi.Lib.Models;
+
+@model Media;
+
+@{
+    ViewData["Title"] = "Home Page";
+
+    string releaseYear = "Unknown";
+
+    if (!string.IsNullOrEmpty(Model.TMDBData.FilmIdResult.release_date))
+    {
+        releaseYear = Convert.ToDateTime(Model.TMDBData.FilmIdResult.release_date).Year.ToString();
+    }
+}
+
+<script type="text/javascript">
+
+// fire once the window has fully loaded
+window.onload = function(){
+
+    var vote = @Html.Raw(Json.Serialize(Model.TMDBData.FilmIdResult.vote_average)) // Scores will come down like 6.6 or 7.1 so decimal value
+    var runtime = @Html.Raw(Json.Serialize(Model.TMDBData.FilmIdResult.runtime)) 
+    var tmdbPopularity = @Html.Raw(Json.Serialize(Model.TMDBData.FilmIdResult.popularity)) 
+    
+    var idVal1 = document.getElementById('spanRuntime');
+    var idVal2 = document.getElementById('spanScore');
+    var idVal3 = document.getElementById('spanTmdbPopularity');
+
+    if(runtime <= 120) // Less than 2hrs
+    {
+        idVal1.style.color = 'green';
+        idVal1.style.fontWeight = 'bold';
+    }
+    else if(runtime > 120 && runtime <=150) // Between 2 > 2.5hrs
+    {
+        idVal1.style.color = 'orange';
+        idVal1.style.fontWeight = 'bold';
+    }
+    else if(runtime > 150) // 2.5hrs or longer
+    {
+        idVal1.style.color = 'red';
+        idVal1.style.fontWeight = 'bold';
+    }
+
+    if(vote >= 7) 
+    {
+        idVal2.style.color = 'green';
+        idVal2.style.fontWeight = 'bold';
+    }
+    else if(vote > 5 && vote < 7) 
+    {
+        idVal2.style.color = 'orange';
+        idVal2.style.fontWeight = 'bold';
+    }
+    else if(vote < 5) 
+    {
+        idVal2.style.color = 'red';
+        idVal2.style.fontWeight = 'bold';
+    }
+
+    if(tmdbPopularity > 2001)
+    {
+        idVal3.style.color = 'green';
+        idVal3.style.fontWeight = 'bold';
+    }
+    else if (tmdbPopularity >= 451 && tmdbPopularity <= 2000)
+    {
+        idVal3.style.color = 'orange';
+        idVal3.style.fontWeight = 'bold';
+    }
+    else if (tmdbPopularity <= 450)
+    {
+        idVal3.style.color = 'red';
+        idVal3.style.fontWeight = 'bold';
+    }
+}
+
+</script>
+
+<h3>@Model.TMDBData.FilmIdResult.original_title (@releaseYear)</h3>
+
+<p></p>
+
+@{
+    string url = "https://image.tmdb.org/t/p/original" + Model.TMDBData.FilmIdResult.poster_path;
+
+    @if (string.IsNullOrEmpty(Model.TMDBData.FilmIdResult.poster_path))
+    {
+            <img id="Cinema.jpg" class="filmTvDetailPosterImgSize" src="~/Images/Cinema.jpg" />
+    }
+    else
+    {
+            <img src="@url" class="filmTvDetailPosterImgSize" />
+    }
+}
+
+<p></p>
+
+<form method="post" asp-action="MarkAsWatched">
+
+    @{
+        Model.SelectedContentType = "Film";
+    }
+
+    <input type="hidden" asp-for="@Model.SelectedTMDBId" />
+    <input type="hidden" asp-for="@Model.SelectedContentType" />
+
+    <button type="submit" class="btn btn-primary">Mark As Watched <i class="bi bi-plus-circle"></i></button>
+
+</form>
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-header">General Information:</div>
+    <div class="card-body">
+        <li>Score: <span id="spanScore">@Model.TMDBData.Score</span>&nbsp; <i class="bi bi-info-square" data-toggle="tooltip" data-placement="right" title="Green is high, orange is medium and red is a low rating score."></i></li>
+        <li>Runtime: <span id="spanRuntime">@Model.TMDBData.FilmIdResult.runtime.ToString() mins</span>&nbsp; <i class="bi bi-info-square" data-toggle="tooltip" data-placement="right" title="Runtime below 120 mins is green, between 121 and 150 orange and above 150 red."></i></li>
+        <li>TMDB Popularity: <span id="spanTmdbPopularity">@Math.Round(Model.TMDBData.FilmIdResult.popularity, 0)</span>&nbsp; <i class="bi bi-info-square" data-toggle="tooltip" data-placement="right" title="Green is high, orange is medium and red is a low TMDB popularity score."></i></li>
+        <li>Genres: @String.Join(", ", Model.TMDBData.FilmIdResult.genres.Select(x => x.name).ToArray())</li>
+
+        @{
+            if (!string.IsNullOrEmpty(Model.TMDBData.FilmIdResult.tagline))
+            {
+                    <li>Tagline: @Model.TMDBData.FilmIdResult.tagline</li>
+            }
+        }
+    </div>
+</div>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-header">Overview:</div>
+    <div class="card-body">
+        @Model.TMDBData.FilmIdResult.overview
+    </div>
+</div>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-header">Main Cast:</div>
+    <div class="card-body">
+        @{
+            List<Cast> castColl;
+
+            if (Model.TMDBData.CreditsByFilmId.cast.Count() > 15)
+            {
+                castColl = Model.TMDBData.CreditsByFilmId.cast.OrderBy(item => item.order).Take(15).ToList();
+            }
+            else
+            {
+                castColl = Model.TMDBData.CreditsByFilmId.cast.OrderBy(item => item.order).ToList();
+            }
+
+            foreach (Cast cast in castColl)
+            {
+                    <div class="inner_block">
+                        <table>
+                            <tr>
+                                <td>
+                                    <div class="castInfoContainer">
+                                        @cast.name
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @{
+                                    string castUrl = "https://image.tmdb.org/t/p/original" + cast.profile_path;
+
+                                            <a href="@Url.Action("GetUserPersonSelectionById", "Movie", new { id = cast.id })">
+
+                                                @if (string.IsNullOrEmpty(cast.profile_path))
+                                        {
+                                                    <img id="Cinema.jpg" class="castImgSize" src="~/Images/Cinema.jpg" />
+                                        }
+                                        else
+                                        {
+                                                    <img src="@castUrl" class="castImgSize" />
+                                        }
+
+                                            </a>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="castInfoContainer">
+                                        @{
+                                        if (!string.IsNullOrEmpty(cast.character))
+                                        {
+                                                    @cast.character
+                                        }
+                                        else
+                                        {
+                                                    @: Unknown
+                                        }
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            }
+        }
+    </div>
+</div>

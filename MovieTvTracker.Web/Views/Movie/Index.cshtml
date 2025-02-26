@@ -1,0 +1,132 @@
+﻿@using TmdbApi.Lib.Models;
+
+@model Media;
+
+@{
+    ViewData["Title"] = "Search Results";
+}
+
+@* Partial tag helper *@
+<partial name="_MediaSearch" model="Model"/>
+@* @await Html.PartialAsync("_MediaSearch", Model) *@
+
+<p></p>
+
+@{
+    if (Model.TMDBData.FilmResults.results.Count() != 0)
+    {
+        <h4>Film:</h4>
+
+        <p></p>
+
+        @foreach (var obj in Model.TMDBData.FilmResults.results)
+        {
+            <partial name="_GetFilmBlockResult" model="@obj" />
+        }
+    }
+}
+
+@{
+    if (Model.TMDBData.TvResults.results.Count() != 0)
+    {
+        <p></p>
+
+        <h4>TV:</h4>
+
+        <p></p>
+
+        @foreach (var obj in Model.TMDBData.TvResults.results)
+        {
+            <div class="inner_block">
+                <table>
+                    <tr>
+                        <td>
+                            <div class="titleContainer">
+                                @{
+                                    if (!string.IsNullOrEmpty(obj.first_air_date))
+                                    {
+                                        DateTime firstAirDate = Convert.ToDateTime(obj.first_air_date);
+
+                                        <span>@obj.name (@firstAirDate.Year)</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@obj.name</span>
+                                    }
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-top: 5px;">
+                            @{
+                                string url = string.Empty;
+
+                                url = "https://image.tmdb.org/t/p/original" + obj.poster_path;
+
+                                <a href="@Url.Action("GetUserTVSelectionById", "Movie", new { id = obj.id })">
+
+                                    @if (string.IsNullOrEmpty(obj.poster_path))
+                                    {
+                                        <img id="Cinema.jpg" class="filmTvPosterImgSize" src="~/Images/Cinema.jpg" />
+                                    }
+                                    else
+                                    {
+                                        <img src="@url" class="filmTvPosterImgSize" />
+                                    }
+
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        }
+    }
+}
+
+@{
+    if (Model.TMDBData.PersonResults.results.Count() != 0)
+    {
+        <p></p>
+
+        <h4>Person:</h4>
+
+        <p></p>
+
+        @foreach (var obj in Model.TMDBData.PersonResults.results)
+        {
+            <div>
+                <table>
+                    <tr>
+                        <td class="personSearch">
+                            @{
+                                string url = string.Empty;
+
+                                url = "https://image.tmdb.org/t/p/original" + obj.profile_path;
+
+                                <a href="@Url.Action("GetUserPersonSelectionById", "Movie", new { id = obj.id })">
+
+                                    @if (string.IsNullOrEmpty(obj.profile_path))
+                                    {
+                                        <img id="Cinema.jpg" class="personSearchImgSize" src="~/Images/Cinema.jpg" />
+                                    }
+                                    else
+                                    {
+                                        <img src="@url" class="personSearchImgSize" />
+                                    }
+
+                                </a>
+                            }
+                        </td>
+                        <td class="personSearch">
+                            <b>@obj.name</b><br />
+                            @obj.known_for_department:
+                            @String.Join(", ", obj.known_for.Select(x => x.original_title).ToArray())
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        }
+    }
+}

@@ -1,0 +1,229 @@
+﻿@using TmdbApi.Lib.Enum
+
+@model Media;
+
+@{
+    ViewData["Title"] = @Model.TMDBData.PersonIdResult.name;
+
+    Gender gender = (Gender)Model.TMDBData.PersonIdResult.gender;
+}
+
+<script type="text/javascript">
+
+    // fire once the window has fully loaded
+    window.onload = function() {
+
+        var tmdbPopularity = @Html.Raw(Json.Serialize(Model.TMDBData.PersonIdResult.popularity))
+
+        var idVal = document.getElementById('spanTmdbPopularity');
+
+        if (tmdbPopularity >= 100) 
+        {
+            idVal.style.color = 'green';
+            idVal.style.fontWeight = 'bold';
+        }
+        else if (tmdbPopularity >= 31 && tmdbPopularity <= 99) 
+        {
+            idVal.style.color = 'orange';
+            idVal.style.fontWeight = 'bold';
+        }
+        else if (tmdbPopularity <= 30) 
+        {
+            idVal.style.color = 'red';
+            idVal.style.fontWeight = 'bold';
+        }
+
+    }
+
+</script>
+
+<h3>@Model.TMDBData.PersonIdResult.name</h3>
+
+<p></p>
+
+@{
+    string castProfilePicUrl = string.Empty;
+
+    castProfilePicUrl = "https://image.tmdb.org/t/p/original" + @Model.TMDBData.PersonIdResult.profile_path;
+
+    @if (string.IsNullOrEmpty(Model.TMDBData.PersonIdResult.profile_path))
+    {
+        <img id="Cinema.jpg" class="filmTvDetailPosterImgSize" src="~/Images/Cinema.jpg" />
+    }
+    else
+    {
+        <img src="@castProfilePicUrl" class="filmTvDetailPosterImgSize" />
+    }
+}
+
+<p></p>
+
+<form method="post" asp-action="MarkFavoriteActor">
+
+    <input type="hidden" asp-for="@Model.TMDBData.PersonIdResult.id" />
+
+    <button type="submit" class="btn btn-primary">Mark Favorite Actor <i class="bi bi-plus-circle"></i></button>
+
+</form>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-header">General Information:</div>
+    <div class="card-body">
+        <li>Career: @Model.TMDBData.PersonIdResult.known_for_department</li>
+        <li>Gender: @gender</li>
+        <li>Date Of Birth: @Model.TMDBData.PersonDobAge</li>
+        <li>Place Of Birth: @Model.TMDBData.PersonIdResult.place_of_birth</li>
+        <li>Known For: @Model.TMDBData.KnownForMovies</li>
+        <li>TMDB Popularity: <span id="spanTmdbPopularity">@Math.Round(Model.TMDBData.PersonIdResult.popularity, 0)</span>&nbsp; <i class="bi bi-info-square" data-toggle="tooltip" data-placement="right" title="Green is high, orange is medium and red is a low TMDB popularity score."></i></li>
+    </div>
+</div>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-header">Biography:</div>
+    <div class="card-body">
+        @Model.TMDBData.PersonIdResult.biography
+    </div>
+</div>
+
+<p></p>
+
+<h4>Credits - Film:</h4>
+
+<p></p>
+
+<table class="siteTheme" style="width:100%">
+    <thead>
+        <tr>
+            <th class="siteTheme">
+                Poster:
+            </th>
+            <th class="siteTheme">
+                Year:
+            </th>
+            <th class="siteTheme">
+                Title/Role:
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model.TMDBData.CombinedCreditsByPersonId.cast.Where(item => item.media_type == "movie").OrderByDescending(item => item.release_date))
+        {
+            @if (!string.IsNullOrEmpty(obj.release_date))
+            {
+                <tr>
+                    <td class="siteTheme" style="width:58px; text-align: center;">
+                        @{
+                            string filmPosterUrl = "https://image.tmdb.org/t/p/original" + obj.poster_path;
+
+                            <a href="@Url.Action("GetUserFilmSelectionById", "Movie", new { id = obj.id })">
+
+                                @if (string.IsNullOrEmpty(obj.poster_path))
+                                {
+                                    <img id="Cinema.jpg" class="personCreditsImgSize" src="~/Images/Cinema.jpg" />
+                                }
+                                else
+                                {
+                                    <img src="@filmPosterUrl" class="personCreditsImgSize" />
+                                }
+
+                            </a>
+                        }
+                    </td>
+                    <td class="siteTheme" style="width: 45px;">
+                        @{
+                            @Convert.ToDateTime(obj.release_date).Year.ToString();
+                        }
+                    </td>
+                    <td class="siteTheme">
+                        <b>@obj.original_title</b><br />
+
+                        @if (!string.IsNullOrEmpty(obj.character))
+                        {
+                            @:- @obj.character<br>
+                        }
+
+                        @if (obj.genre_ids.Contains((int)MovieGenre.Documentary) && obj.genre_ids.Contains((int)MovieGenre.Music) && (obj.character.Contains("Self") || obj.character.Contains("Herself") || obj.character.Contains("Himself")))
+                        {
+                            @:- Music Documentary
+                        }
+                        else if (obj.genre_ids.Contains((int)MovieGenre.Documentary) && (obj.character.Contains("Self") || obj.character.Contains("Herself") || obj.character.Contains("Himself")))
+                        {
+                            @:- Documentary
+                        }
+                        else if (obj.genre_ids.Contains((int)MovieGenre.Music) && (obj.character.Contains("Self") || obj.character.Contains("Herself") || obj.character.Contains("Himself")))
+                        {
+                            @:- Music Concert/Video
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<p></p>
+
+<h4>Credits - TV:</h4>
+
+<p></p>
+
+<table class="siteTheme" style="width:100%">
+    <thead>
+        <tr>
+            <th class="siteTheme">
+                Poster:
+            </th>
+            <th class="siteTheme">
+                Year:
+            </th>
+            <th class="siteTheme">
+                Title/Role:
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model.TMDBData.CombinedCreditsByPersonId.cast.Where(item => item.media_type == "tv").OrderByDescending(item => item.first_air_date))
+        {
+            @if (!string.IsNullOrEmpty(obj.first_air_date))
+            {
+                <tr>
+                    <td class="siteTheme" style="width:58px; text-align: center;">
+                        @{
+                            string filmPosterUrl = "https://image.tmdb.org/t/p/original" + obj.poster_path;
+
+                            <a href="@Url.Action("GetUserTVSelectionById", "Movie", new { id = obj.id })">
+
+                                @if (string.IsNullOrEmpty(obj.poster_path))
+                                {
+                                    <img id="Cinema.jpg" class="personCreditsImgSize" src="~/Images/Cinema.jpg" />
+                                }
+                                else
+                                {
+                                    <img src="@filmPosterUrl" class="personCreditsImgSize" />
+                                }
+
+                            </a>
+                        }
+                    </td>
+                    <td class="siteTheme" style="width: 45px;">
+                        @{
+                            @Convert.ToDateTime(obj.first_air_date).Year.ToString();
+                        }
+                    </td>
+                    <td class="siteTheme">
+                        <b>@obj.name</b><br />
+
+                        @if (!string.IsNullOrEmpty(obj.character))
+                        {
+                            @:- @obj.character
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

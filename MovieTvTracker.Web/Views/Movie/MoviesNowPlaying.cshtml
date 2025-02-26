@@ -1,0 +1,27 @@
+﻿@using TmdbApi.Lib.Models;
+
+@model Media;
+
+@{
+    ViewData["Title"] = "MoviesNowPlaying";
+}
+
+@* Partial tag helper *@
+<partial name="_MediaSearch" model="Model"/>
+@* @await Html.PartialAsync("_MediaSearch", Model) *@
+
+<p></p>
+
+<h4>Movies Now Playing:</h4>
+
+<p></p>
+
+@{
+    if (Model.TMDBData.MoviesNowPlaying.results.Count() != 0)
+    {
+        @foreach (var obj in Model.TMDBData.MoviesNowPlaying.results)
+        {
+            <partial name="_GetFilmBlockResult" model="@obj" />
+        }
+    }
+}

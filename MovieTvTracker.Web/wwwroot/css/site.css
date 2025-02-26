@@ -1,0 +1,94 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.inner_block {
+    display: inline-block;
+    text-align: center;
+    width: 18%;
+    /*padding-bottom: 10px;*/
+    /*border: 1px solid black;*/
+}
+
+table.siteTheme, th.siteTheme, td.siteTheme {
+    border: 2px solid;
+}
+
+th.siteTheme, td.siteTheme, td.personSearch {
+    padding: 5px;
+}
+
+th.siteTheme {
+    text-align: center;
+    background-color: lightgray;
+}
+
+.filmTvPosterImgSize {
+    /*Poster sizing issues are caused if this is set to a % value*/
+    width: 198px;
+    height: 298px;
+    border-radius: 8px;
+    /*border-radius: 5px 25px;*/
+}
+
+.filmTvDetailPosterImgSize {
+    width: 20%;
+    height: 20%;
+    border-radius: 8px;
+}
+
+.castImgSize {
+    width: 40%;
+    height: 40%;
+    border-radius: 5px;
+}
+
+.personSearchImgSize, .myWatchedMediaImgSize, .myFavoriteActorsImgSize {
+    width: 62px;
+    height: 93px;
+    border-radius: 5px;
+}
+
+.personCreditsImgSize {
+    width: 42px;
+    height: 58px;
+}
+
+div.castInfoContainer {
+    max-height: 25px; /* Stops a long cast members name going onto two lines */
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+div.titleContainer {
+    align-content: center;
+    border: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    height: 54px;
+    overflow: hidden;
+    background-color: #fdfdfb;
+}
+
+.inline-block-child {
+    display: inline-block;
+}
