@@ -1,0 +1,176 @@
+﻿@model Media;
+
+@{
+    ViewData["Title"] = "My Watched Media - Film:";
+
+    var XYear = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.FilmYears.Select(x => x.Year).ToList());
+    var YYear = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.FilmYears.Select(x => x.Qty).ToList());
+    var XGenre = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.FilmGenres.Select(x => x.Genre).ToList());
+    var YGenre = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.FilmGenres.Select(x => x.Qty).ToList());
+}
+
+<partial name="_ChartScriptsPartial"/>
+
+<script type="text/javascript">
+
+    window.onload = function() {
+
+        elements = document.getElementsByName("filmScore");
+
+        for (var i = elements.length; i--;) {
+
+            let elementIdInnerText = elements[i].innerText;
+            let patternMatches = elementIdInnerText.match(/\d\d%\s/i);
+
+            if (patternMatches != null) {
+
+                const myArray = elementIdInnerText.split("% ");
+
+                let score = myArray[0];
+
+                if (score >= 70) {
+                    elements[i].style.color = 'green';
+                    elements[i].style.fontWeight = 'bold';
+                }
+                else if (score >= 50 && score < 70) {
+                    elements[i].style.color = 'orange';
+                    elements[i].style.fontWeight = 'bold';
+                }
+                else if (score < 50) {
+                    elements[i].style.color = 'red';
+                    elements[i].style.fontWeight = 'bold';
+                }
+            }
+        }
+
+    }
+
+    $(function() {
+
+        var xYear = @Html.Raw(XYear);
+        var yYear = @Html.Raw(YYear);
+        var xGenre = @Html.Raw(XGenre);
+        var yGenre = @Html.Raw(YGenre);
+        var barColors = "#405b85";
+
+        new Chart("chartYear", {
+            type: "bar",
+            data: {
+                labels: xYear,
+                datasets: [{
+                    label: "Qty",
+                    backgroundColor: barColors,
+                    data: yYear,
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: "Release Year Of Films Watched"
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true,
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: false,
+                        }
+                    }]
+                }
+            }
+        });
+
+        new Chart("chartGenre", {
+            type: "bar",
+            data: {
+                labels: xGenre,
+                datasets: [{
+                    label: "Qty",
+                    backgroundColor: barColors,
+                    data: yGenre,
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: "Genre Of Films Watched"
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true,
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: false,
+                        }
+                    }]
+                }
+            }
+        });
+
+    });
+
+</script>
+
+<h2>My Film Stats:</h2>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-header">Watched Media Information:</div>
+    <div class="card-body">
+        <li>Film Count: @Model.WatchedMediaResults.WatchedFilms.Count()</li>
+        <ul>
+            <li>This month: @Model.FilmsThisMonth</li>
+            <li>Last month: @Model.FilmsLastMonth</li>
+            <li>This year: @Model.FilmsThisYear</li>
+        </ul>
+        <li>Watched Films Year Range: @Model.YearRange</li>
+        <li>Top 5 - Most Watched Years: @Model.TopFiveYears</li>
+        <li>Top 5 - Most Watched Genres: @Model.TopFiveGenres</li>
+        <li>Top 2 - Most Watched Decades: @Model.TopTwoDecades</li>
+    </div>
+</div>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-body">
+        <canvas id="chartYear" style="height:200px"></canvas>
+    </div>
+</div>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-body">
+        <canvas id="chartGenre" style="height:200px"></canvas>
+    </div>
+</div>

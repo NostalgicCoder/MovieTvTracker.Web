@@ -1,0 +1,13 @@
+﻿@{
+    var prevDisabled = !Model.PaginatedWatchedMediaList.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.PaginatedWatchedMediaList.HasNextPage ? "disabled" : "";
+
+    <a class="btn btn-primary @prevDisabled" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="@(Model.PaginatedWatchedMediaList.PageIndex - 1)">Previous</a>
+
+    for (int i = 1; i <= Model.PaginatedWatchedMediaList.TotalPages; i++)
+    {
+        <a class="btn btn-primary" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="@i">@i</a>
+    }
+
+    <a class="btn btn-primary @nextDisabled" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="@(Model.PaginatedWatchedMediaList.PageIndex + 1)">Next</a>
+}

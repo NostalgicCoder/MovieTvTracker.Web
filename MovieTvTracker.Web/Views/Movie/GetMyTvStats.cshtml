@@ -1,0 +1,119 @@
+﻿@model Media;
+
+@{
+    ViewData["Title"] = "My Watched Media - TV:";
+
+    var XTvGenre = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.TvGenres.Select(x => x.Genre).ToList());
+    var YTvGenre = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.TvGenres.Select(x => x.Qty).ToList());
+}
+
+<partial name="_ChartScriptsPartial"/>
+
+<script type="text/javascript">
+
+    window.onload = function() {
+
+        elements = document.getElementsByName("tvScore");
+
+        for (var i = elements.length; i--;) {
+
+            let elementIdInnerText = elements[i].innerText;
+            let patternMatches = elementIdInnerText.match(/\d\d%\s/i);
+
+            if (patternMatches != null) {
+
+                const myArray = elementIdInnerText.split("% ");
+
+                let score = myArray[0];
+
+                if (score >= 70) {
+                    elements[i].style.color = 'green';
+                    elements[i].style.fontWeight = 'bold';
+                }
+                else if (score >= 50 && score < 70) {
+                    elements[i].style.color = 'orange';
+                    elements[i].style.fontWeight = 'bold';
+                }
+                else if (score < 50) {
+                    elements[i].style.color = 'red';
+                    elements[i].style.fontWeight = 'bold';
+                }
+            }
+        }
+
+    }
+
+    $(function() {
+
+        var xTvGenre = @Html.Raw(XTvGenre);
+        var yTvGenre = @Html.Raw(YTvGenre);
+        var barColors = "#405b85";
+
+        new Chart("chartTvGenre", {
+            type: "bar",
+            data: {
+                labels: xTvGenre,
+                datasets: [{
+                    label: "Qty",
+                    backgroundColor: barColors,
+                    data: yTvGenre,
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: "Genre Of TV Watched"
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true,
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: false,
+                        }
+                    }]
+                }
+            }
+        });
+
+    });
+
+</script>
+
+<h2>My TV Stats:</h2>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-header">Watched Media Information:</div>
+    <div class="card-body">
+        <li>TV Count: @Model.WatchedMediaResults.WatchedTV.Count()</li>
+        <ul>
+            <li>This month: @Model.TvThisMonth</li>
+            <li>Last month: @Model.TvLastMonth</li>
+            <li>This year: @Model.TvThisYear</li>
+        </ul>
+    </div>
+</div>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-body">
+        <canvas id="chartTvGenre" style="height:200px"></canvas>
+    </div>
+</div>

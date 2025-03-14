@@ -8,6 +8,7 @@ namespace MovieTvTracker.Web.Interfaces
     public interface IMedia
     {
         PaginatedList<FavoriteActor> PaginatedFavoriteActorList { get; set; }
+        PaginatedList<WatchedMedia> PaginatedWatchedMediaList { get; set; }
         List<ResultReturn> FavoriteActorResults { get; set; }
         List<FavoriteFilmDecade> FavoriteFilmDecadeResults { get; set; }
         ResultReturn TMDBData { get; set; }

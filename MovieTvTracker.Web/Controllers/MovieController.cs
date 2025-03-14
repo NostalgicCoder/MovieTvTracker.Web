@@ -16,6 +16,8 @@ namespace MovieTvTracker.Web.Controllers
 
         private readonly ApplicationDbContext _db;
 
+        private int _pageSize = 25;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -66,20 +68,21 @@ namespace MovieTvTracker.Web.Controllers
         }
 
         /// <summary>
-        /// Aquire watched media film results from the database, run those results through TMDB API to get information and then feed that to the model that supplies the view.
+        /// Process all results in the 'WatchedMedia' table that match film content then get data from TMDB API on each of them and generate stats.
         /// </summary>
         /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         [HttpGet]
-        public IActionResult GetWatchedMediaFilm()
+        public IActionResult GetMyFilmStats()
         {
-            IMedia media = new Media();
-            IGetStatistics stats = new GetStatistics();
-
             try
             {
+                IMedia media = new Media();
+                IGetStatistics stats = new GetStatistics();
+
                 media.WatchedMediaResults = new WatchedMediaResults();
 
-                foreach (WatchedMedia item in _db.WatchedMedia.Where(x => x.ContentType == "Film").OrderByDescending(x => x.LastWatched))
+                foreach (WatchedMedia item in _db.WatchedMedia.Where(x => x.ContentType == "Film"))
                 {
                     media.WatchedMediaResults.WatchedFilms.Add(new WatchedMediaItem
                     {
@@ -90,30 +93,31 @@ namespace MovieTvTracker.Web.Controllers
 
                 media = stats.GetFilmYearsRangeAndGenres(media);
                 media = stats.GetQtyViewingStats(media);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("GetWatchedMediaFilm", ex);
-            }
 
-            return View(media);
+                return View(media);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("GetMyFilmStats", ex);
+            }
         }
 
         /// <summary>
-        /// Aquire watched media TV results from the database, run those results through TMDB API to get information and then feed that to the model that supplies the view.
+        /// Process all results in the 'WatchedMedia' table that match TV content then get data from TMDB API on each of them and generate stats.
         /// </summary>
         /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         [HttpGet]
-        public IActionResult GetWatchedMediaTv()
+        public IActionResult GetMyTvStats()
         {
-            IMedia media = new Media();
-            IGetStatistics stats = new GetStatistics();
-
             try
             {
+                IMedia media = new Media();
+                IGetStatistics stats = new GetStatistics();
+
                 media.WatchedMediaResults = new WatchedMediaResults();
 
-                foreach (WatchedMedia item in _db.WatchedMedia.Where(x => x.ContentType == "TV").OrderByDescending(x => x.LastWatched))
+                foreach (WatchedMedia item in _db.WatchedMedia.Where(x => x.ContentType == "TV"))
                 {
                     media.WatchedMediaResults.WatchedTV.Add(new WatchedMediaItem
                     {
@@ -124,13 +128,81 @@ namespace MovieTvTracker.Web.Controllers
 
                 media = stats.GetTvGenres(media);
                 media = stats.GetQtyViewingStats(media);
+
+                return View(media);
             }
             catch (Exception ex)
             {
+                throw new Exception("GetMyTvStats", ex);
+            }
+        }
+
+        /// <summary>
+        /// Process all results in the 'WatchedMedia' table that match film content, paginate the content to fit the chosen pageSize and maintain performance.
+        /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        [HttpGet]
+        public IActionResult GetWatchedMediaFilm(int? pageNumber)
+        {
+            try
+            {
+                IMedia media = new Media();
+                IGetStatistics stats = new GetStatistics();
+
+                media.WatchedMediaResults = new WatchedMediaResults();
+                media.PaginatedWatchedMediaList = PaginatedList<WatchedMedia>.Create(_db.WatchedMedia.Where(x => x.ContentType == "Film").OrderByDescending(x => x.LastWatched).ToList(), pageNumber ?? 1, _pageSize);
+
+                foreach (WatchedMedia item in media.PaginatedWatchedMediaList)
+                {
+                    media.WatchedMediaResults.WatchedFilms.Add(new WatchedMediaItem
+                    {
+                        ResultReturn = _tmdb.SearchForFilmAndCreditsById(item.TMDBId),
+                        WatchedMedia = item
+                    });
+                }
+
+                return View(media);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("GetWatchedMediaFilm", ex);
+            }
+        }
+
+        /// <summary>
+        /// Process all results in the 'WatchedMedia' table that match TV content, paginate the content to fit the chosen pageSize and maintain performance.
+        /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        [HttpGet]
+        public IActionResult GetWatchedMediaTv(int? pageNumber)
+        {
+            try
+            {
+                IMedia media = new Media();
+                IGetStatistics stats = new GetStatistics();
+
+                media.WatchedMediaResults = new WatchedMediaResults();
+                media.PaginatedWatchedMediaList = PaginatedList<WatchedMedia>.Create(_db.WatchedMedia.Where(x => x.ContentType == "TV").OrderByDescending(x => x.LastWatched).ToList(), pageNumber ?? 1, _pageSize);
+
+                foreach (WatchedMedia item in media.PaginatedWatchedMediaList)
+                {
+                    media.WatchedMediaResults.WatchedTV.Add(new WatchedMediaItem
+                    {
+                        ResultReturn = _tmdb.SearchForTvAndCreditsById(item.TMDBId),
+                        WatchedMedia = item
+                    });
+                }
+
+                return View(media);
+            }
+            catch(Exception ex)
+            {
                 throw new Exception("GetWatchedMediaTv", ex);
             }
-
-            return View(media);
         }
 
         /// <summary>
@@ -142,10 +214,8 @@ namespace MovieTvTracker.Web.Controllers
         {
             IMedia media = new Media();
 
-            int pageSize = 25;
-
             media.FavoriteActorTotalCount = _db.FavoriteActor.Count();
-            media.PaginatedFavoriteActorList = PaginatedList<FavoriteActor>.Create(_db.FavoriteActor.ToList(), pageNumber ?? 1, pageSize);
+            media.PaginatedFavoriteActorList = PaginatedList<FavoriteActor>.Create(_db.FavoriteActor.ToList(), pageNumber ?? 1, _pageSize);
 
             try
             {

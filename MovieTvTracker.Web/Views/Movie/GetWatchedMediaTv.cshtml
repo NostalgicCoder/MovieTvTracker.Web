@@ -1,14 +1,5 @@
 ﻿@model Media;
 
-@{
-    ViewData["Title"] = "My Watched Media - TV:";
-
-    var XTvGenre = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.TvGenres.Select(x => x.Genre).ToList());
-    var YTvGenre = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.TvGenres.Select(x => x.Qty).ToList());
-}
-
-<partial name="_ChartScriptsPartial"/>
-
 <script type="text/javascript">
 
     window.onload = function() {
@@ -43,84 +34,13 @@
 
     }
 
-    $(function() {
-
-        var xTvGenre = @Html.Raw(XTvGenre);
-        var yTvGenre = @Html.Raw(YTvGenre);
-        var barColors = "#405b85";
-
-        new Chart("chartTvGenre", {
-            type: "bar",
-            data: {
-                labels: xTvGenre,
-                datasets: [{
-                    label: "Qty",
-                    backgroundColor: barColors,
-                    data: yTvGenre,
-                    borderWidth: 1,
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                legend: { display: false },
-                title: {
-                    display: true,
-                    text: "Genre Of TV Watched"
-                },
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            min: 0,
-                            beginAtZero: true
-                        },
-                        gridLines: {
-                            display: true,
-                        }
-                    }],
-                    xAxes: [{
-                        ticks: {
-                            min: 0,
-                            beginAtZero: true
-                        },
-                        gridLines: {
-                            display: false,
-                        }
-                    }]
-                }
-            }
-        });
-
-    });
-
 </script>
 
-<h2>My Watched Media - TV:</h2>
-
-<p></p>
-
-<div class="card border-secondary mb-3" style="width: 100%">
-    <div class="card-header">Watched Media Information:</div>
-    <div class="card-body">
-        <li>TV Count: @Model.WatchedMediaResults.WatchedTV.Count()</li>
-        <ul>
-            <li>This month: @Model.TvThisMonth</li>
-            <li>Last month: @Model.TvLastMonth</li>
-            <li>This year: @Model.TvThisYear</li>
-        </ul>
-    </div>
-</div>
-
-<p></p>
-
-<div class="card border-secondary mb-3" style="width: 100%">
-    <div class="card-body">
-        <canvas id="chartTvGenre" style="height:200px"></canvas>
-    </div>
-</div>
-
-<p></p>
-
 <h4>TV:</h4>
+
+<p></p>
+
+<partial name="_WatchedMediaTvPaginatePartial" model="Model" />
 
 <p></p>
 
@@ -205,3 +125,7 @@
         }
     </tbody>
 </table>
+
+<p></p>
+
+<partial name="_WatchedMediaTvPaginatePartial" model="Model" />

@@ -44,6 +44,7 @@ Technologies / Principles Used:
 - SQL Server Express
 - TDD (Microsoft Test Framework, Fluent Assertions, Fluent Validation)
 - Dependency Injection
+- Pagination - Used to maintain page performance
 
 Requirements:
 
@@ -60,6 +61,8 @@ Resources / Credits:
 - https://bootswatch.com/sandstone/
 - https://www.chartjs.org/docs/latest/
 - https://www.w3schools.com/ai/ai_chartjs.asp
+- (Pagination) https://www.youtube.com/watch?v=md3W1Ccssg8&list=WL&index=21
+- (Pagination) https://www.youtube.com/watch?v=L9VtwtoLvy8&list=WL&index=20
 
 Video Demo:
 
@@ -82,6 +85,7 @@ Images:
 ![Alt text](Images/MovieTvTrackerWatchedMedia1.jpg)
 ![Alt text](Images/MovieTvTrackerWatchedMedia2.jpg)
 ![Alt text](Images/MovieTvTrackerWatchedMedia3.jpg)
+![Alt text](Images/MovieTvTrackerWatchedMedia4.jpg)
 ![Alt text](Images/MovieTvTrackerFavoriteActor1.jpg)
 ![Alt text](Images/MovieTvTrackerEnd1.jpg)
 ![Alt text](Images/MovieTvTrackerEnd2.jpg)

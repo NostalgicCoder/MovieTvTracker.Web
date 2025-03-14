@@ -8,6 +8,7 @@ namespace MovieTvTracker.Web.Models
     public class Media : IMedia
     {
         public PaginatedList<FavoriteActor> PaginatedFavoriteActorList { get; set; }
+        public PaginatedList<WatchedMedia> PaginatedWatchedMediaList { get; set; }
         public List<ResultReturn> FavoriteActorResults { get; set; }
         public List<FavoriteFilmDecade> FavoriteFilmDecadeResults { get; set; }
         public ResultReturn TMDBData { get; set; }
