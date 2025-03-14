@@ -1,0 +1,13 @@
+﻿@{
+    var prevDisabled = !Model.PaginatedFavoriteActorList.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.PaginatedFavoriteActorList.HasNextPage ? "disabled" : "";
+
+    <a class="btn btn-primary @prevDisabled" asp-action="GetFavoriteActors" asp-route-pageNumber="@(Model.PaginatedFavoriteActorList.PageIndex - 1)">Previous</a>
+
+    for (int i = 1; i <= Model.PaginatedFavoriteActorList.TotalPages; i++)
+    {
+        <a class="btn btn-primary" asp-action="GetFavoriteActors" asp-route-pageNumber="@i">@i</a>
+    }
+
+    <a class="btn btn-primary @nextDisabled" asp-action="GetFavoriteActors" asp-route-pageNumber="@(Model.PaginatedFavoriteActorList.PageIndex + 1)">Next</a>
+}

@@ -138,14 +138,18 @@ namespace MovieTvTracker.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult GetFavoriteActors()
+        public IActionResult GetFavoriteActors(int? pageNumber)
         {
             IMedia media = new Media();
 
+            int pageSize = 25;
+
+            media.FavoriteActorTotalCount = _db.FavoriteActor.Count();
+            media.PaginatedFavoriteActorList = PaginatedList<FavoriteActor>.Create(_db.FavoriteActor.ToList(), pageNumber ?? 1, pageSize);
+
             try
             {
-                // TODO: Paginate results or reduce down weight of TMDB API call to keep this more performant as result count increases.  Can restrict down as temp measure using 'foreach (FavoriteActor item in _db.FavoriteActor.Take(75))'
-                foreach (FavoriteActor item in _db.FavoriteActor)
+                foreach (FavoriteActor item in media.PaginatedFavoriteActorList)
                 {
                     try
                     {

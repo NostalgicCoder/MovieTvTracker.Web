@@ -1,15 +1,19 @@
-﻿using MovieTvTracker.Web.Interfaces;
+﻿using MovieTvTracker.Web.Class;
+using MovieTvTracker.Web.Data;
+using MovieTvTracker.Web.Interfaces;
 using TmdbApi.Lib.Models;
 
 namespace MovieTvTracker.Web.Models
 {
     public class Media : IMedia
     {
+        public PaginatedList<FavoriteActor> PaginatedFavoriteActorList { get; set; }
         public List<ResultReturn> FavoriteActorResults { get; set; }
         public List<FavoriteFilmDecade> FavoriteFilmDecadeResults { get; set; }
         public ResultReturn TMDBData { get; set; }
         public WatchedMediaResults WatchedMediaResults { get; set; }
         public Stats Stats { get; set; }
+        public Int32 FavoriteActorTotalCount { get; set; }
         public Int32 SelectedTMDBId { get; set; }
         public Int32 FilmsThisYear { get; set; }
         public Int32 TvThisYear { get; set; }
