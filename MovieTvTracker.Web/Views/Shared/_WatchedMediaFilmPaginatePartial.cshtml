@@ -2,12 +2,19 @@
     var prevDisabled = !Model.PaginatedWatchedMediaList.HasPreviousPage ? "disabled" : "";
     var nextDisabled = !Model.PaginatedWatchedMediaList.HasNextPage ? "disabled" : "";
 
+    var firstDisabled = Model.PaginatedWatchedMediaList.PageIndex == 1 ? "disabled" : "";
+    var lastDisabled = Model.PaginatedWatchedMediaList.PageIndex == Model.PaginatedWatchedMediaList.TotalPages ? "disabled" : "";
+
+    <a class="btn btn-primary @firstDisabled" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="1">First</a>
+
     <a class="btn btn-primary @prevDisabled" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="@(Model.PaginatedWatchedMediaList.PageIndex - 1)">Previous</a>
 
     for (int i = 1; i <= Model.PaginatedWatchedMediaList.TotalPages; i++)
     {
-        <a class="btn btn-primary" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="@i">@i</a>
+        <a class="btn btn-outline-primary page-item @(Model.PaginatedWatchedMediaList.PageIndex == i ? "active" : "")" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="@i">@i</a>
     }
 
     <a class="btn btn-primary @nextDisabled" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="@(Model.PaginatedWatchedMediaList.PageIndex + 1)">Next</a>
+
+    <a class="btn btn-primary @lastDisabled" asp-action="GetWatchedMediaFilm" asp-route-pageNumber="@(Model.PaginatedWatchedMediaList.TotalPages)">Last</a>
 }

@@ -5,6 +5,7 @@ using TmdbApi.Lib.Interfaces;
 using MovieTvTracker.Web.Class;
 using MovieTvTracker.Web.Interfaces;
 using TmdbApi.Lib.Class;
+using Microsoft.EntityFrameworkCore;
 
 namespace MovieTvTracker.Web.Controllers
 {
@@ -73,7 +74,7 @@ namespace MovieTvTracker.Web.Controllers
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         [HttpGet]
-        public IActionResult GetMyFilmStats()
+        public async Task<IActionResult> GetMyFilmStats()
         {
             try
             {
@@ -82,7 +83,7 @@ namespace MovieTvTracker.Web.Controllers
 
                 media.WatchedMediaResults = new WatchedMediaResults();
 
-                foreach (WatchedMedia item in _db.WatchedMedia.Where(x => x.ContentType == "Film"))
+                foreach (WatchedMedia item in await _db.WatchedMedia.Where(x => x.ContentType == "Film").ToListAsync())
                 {
                     media.WatchedMediaResults.WatchedFilms.Add(new WatchedMediaItem
                     {
@@ -108,7 +109,7 @@ namespace MovieTvTracker.Web.Controllers
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         [HttpGet]
-        public IActionResult GetMyTvStats()
+        public async Task<IActionResult> GetMyTvStats()
         {
             try
             {
@@ -117,7 +118,7 @@ namespace MovieTvTracker.Web.Controllers
 
                 media.WatchedMediaResults = new WatchedMediaResults();
 
-                foreach (WatchedMedia item in _db.WatchedMedia.Where(x => x.ContentType == "TV"))
+                foreach (WatchedMedia item in await _db.WatchedMedia.Where(x => x.ContentType == "TV").ToListAsync())
                 {
                     media.WatchedMediaResults.WatchedTV.Add(new WatchedMediaItem
                     {
@@ -144,7 +145,7 @@ namespace MovieTvTracker.Web.Controllers
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         [HttpGet]
-        public IActionResult GetWatchedMediaFilm(int? pageNumber)
+        public async Task<IActionResult> GetWatchedMediaFilm(int? pageNumber)
         {
             try
             {
@@ -152,7 +153,7 @@ namespace MovieTvTracker.Web.Controllers
                 IGetStatistics stats = new GetStatistics();
 
                 media.WatchedMediaResults = new WatchedMediaResults();
-                media.PaginatedWatchedMediaList = PaginatedList<WatchedMedia>.Create(_db.WatchedMedia.Where(x => x.ContentType == "Film").OrderByDescending(x => x.LastWatched).ToList(), pageNumber ?? 1, _pageSize);
+                media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => x.ContentType == "Film").OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
 
                 foreach (WatchedMedia item in media.PaginatedWatchedMediaList)
                 {
@@ -178,7 +179,7 @@ namespace MovieTvTracker.Web.Controllers
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         [HttpGet]
-        public IActionResult GetWatchedMediaTv(int? pageNumber)
+        public async Task<IActionResult> GetWatchedMediaTv(int? pageNumber)
         {
             try
             {
@@ -186,7 +187,7 @@ namespace MovieTvTracker.Web.Controllers
                 IGetStatistics stats = new GetStatistics();
 
                 media.WatchedMediaResults = new WatchedMediaResults();
-                media.PaginatedWatchedMediaList = PaginatedList<WatchedMedia>.Create(_db.WatchedMedia.Where(x => x.ContentType == "TV").OrderByDescending(x => x.LastWatched).ToList(), pageNumber ?? 1, _pageSize);
+                media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => x.ContentType == "TV").OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
 
                 foreach (WatchedMedia item in media.PaginatedWatchedMediaList)
                 {
@@ -210,12 +211,12 @@ namespace MovieTvTracker.Web.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult GetFavoriteActors(int? pageNumber)
+        public async Task<IActionResult> GetFavoriteActors(int? pageNumber)
         {
             IMedia media = new Media();
 
-            media.FavoriteActorTotalCount = _db.FavoriteActor.Count();
-            media.PaginatedFavoriteActorList = PaginatedList<FavoriteActor>.Create(_db.FavoriteActor.ToList(), pageNumber ?? 1, _pageSize);
+            media.FavoriteActorTotalCount = await _db.FavoriteActor.CountAsync(); ;
+            media.PaginatedFavoriteActorList = await PaginatedList<FavoriteActor>.CreateAsync(_db.FavoriteActor, pageNumber ?? 1, _pageSize);
 
             try
             {
@@ -253,7 +254,7 @@ namespace MovieTvTracker.Web.Controllers
         {
             try
             {
-                WatchedMedia watchedMedia = _db.WatchedMedia.Where(x => x.TMDBId == media.SelectedTMDBId).FirstOrDefault();
+                WatchedMedia watchedMedia = await _db.WatchedMedia.Where(x => x.TMDBId == media.SelectedTMDBId).FirstOrDefaultAsync();
 
                 if (watchedMedia == null)
                 {
@@ -296,7 +297,7 @@ namespace MovieTvTracker.Web.Controllers
         {
             try
             {
-                FavoriteActor favoriteActor = _db.FavoriteActor.Where(x => x.TMDBId == media.TMDBData.PersonIdResult.id).FirstOrDefault();
+                FavoriteActor favoriteActor = await _db.FavoriteActor.Where(x => x.TMDBId == media.TMDBData.PersonIdResult.id).FirstOrDefaultAsync();
 
                 if (favoriteActor == null)
                 {
@@ -408,7 +409,7 @@ namespace MovieTvTracker.Web.Controllers
                 return NotFound();
             }
 
-            FavoriteActor obj = _db.FavoriteActor.Where(x => x.TMDBId == id).First();
+            FavoriteActor obj = await _db.FavoriteActor.Where(x => x.TMDBId == id).FirstAsync();
 
             if (obj == null)
             {
