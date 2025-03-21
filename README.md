@@ -26,6 +26,7 @@ The second part of this project (This Codebase) is a full-stack web application 
 - Display of data in a numeric or graph form on the users film/TV habits giving information such as most popular years, genres, decades as well as quantity of movies/TV watched.
 - Highlights movie/TV runtime, TMDB score/popularity in different colours to indicate there value (low, medium or high).
 - Filter by English or worldwide search results.
+- Filter watched media and actor results using a keyword search.
 
 Technologies / Principles Used:
 
@@ -64,12 +65,6 @@ Resources / Credits:
 - (Pagination) https://www.youtube.com/watch?v=md3W1Ccssg8&list=WL&index=21
 - (Pagination) https://www.youtube.com/watch?v=L9VtwtoLvy8&list=WL&index=20
 
-Video Demo:
-
-NOTE! - Video length is short due to 10mb limit on videos on GitHub
-
-https://github.com/user-attachments/assets/3e7a49fe-6452-428d-ab64-529a6e0c6b20
-
 Images:
 
 ![Alt text](Images/MovieTvTrackerStart1.jpg)
@@ -86,6 +81,7 @@ Images:
 ![Alt text](Images/MovieTvTrackerWatchedMedia2.jpg)
 ![Alt text](Images/MovieTvTrackerWatchedMedia3.jpg)
 ![Alt text](Images/MovieTvTrackerWatchedMedia4.jpg)
+![Alt text](Images/MovieTvTrackerWatchedMedia5.jpg)
 ![Alt text](Images/MovieTvTrackerFavoriteActor1.jpg)
 ![Alt text](Images/MovieTvTrackerEnd1.jpg)
 ![Alt text](Images/MovieTvTrackerEnd2.jpg)

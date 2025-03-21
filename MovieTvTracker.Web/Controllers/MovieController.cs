@@ -143,6 +143,7 @@ namespace MovieTvTracker.Web.Controllers
         /// Process all results in the 'WatchedMedia' table that match film content, paginate the content to fit the chosen pageSize and maintain performance.  Filter results by a keyword provided by the user
         /// </summary>
         /// <param name="pageNumber"></param>
+        /// <param name="media"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         public async Task<IActionResult> GetWatchedMediaFilm(int? pageNumber, Media media)
@@ -184,9 +185,10 @@ namespace MovieTvTracker.Web.Controllers
         }
 
         /// <summary>
-        /// Process all results in the 'WatchedMedia' table that match TV content, paginate the content to fit the chosen pageSize and maintain performance.
+        /// Process all results in the 'WatchedMedia' table that match TV content, paginate the content to fit the chosen pageSize and maintain performance.  Filter results by a keyword provided by the user
         /// </summary>
         /// <param name="pageNumber"></param>
+        /// <param name="media"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         public async Task<IActionResult> GetWatchedMediaTv(int? pageNumber, Media media)
@@ -228,16 +230,28 @@ namespace MovieTvTracker.Web.Controllers
         }
 
         /// <summary>
-        /// Aquire favorite actor results from the database, run those results through TMDB API to get information and then feed that to the model that supplies the view.
+        /// Aquire favorite actor results from the database, run those results through TMDB API to get information and then feed that to the model that supplies the view.  Filter results by a keyword provided by the user
         /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <param name="media"></param>
         /// <returns></returns>
-        [HttpGet]
-        public async Task<IActionResult> GetFavoriteActors(int? pageNumber)
+        /// <exception cref="Exception"></exception>
+        public async Task<IActionResult> GetFavoriteActors(int? pageNumber, Media media)
         {
-            IMedia media = new Media();
-
             media.FavoriteActorTotalCount = await _db.FavoriteActor.CountAsync(); ;
-            media.PaginatedFavoriteActorList = await PaginatedList<FavoriteActor>.CreateAsync(_db.FavoriteActor, pageNumber ?? 1, _pageSize);
+
+            if (!string.IsNullOrEmpty(media.Keyword))
+            {
+                // Aquire all the film TMDB ID values that match the provided keyword value
+                List<Int32> matchedKeywordResults = _tmdb.ConvertIdToTitleAndCheckForKeywordMatch(_db.FavoriteActor.Select(x => x.TMDBId).ToList(), media.Keyword, Caller.Actor);
+
+                // Only paginate through the keyword matched TMDB ID values
+                media.PaginatedFavoriteActorList = await PaginatedList<FavoriteActor>.CreateAsync(_db.FavoriteActor.Where(x => matchedKeywordResults.Contains(x.TMDBId)), pageNumber ?? 1, _pageSize);
+            }
+            else
+            {
+                media.PaginatedFavoriteActorList = await PaginatedList<FavoriteActor>.CreateAsync(_db.FavoriteActor, pageNumber ?? 1, _pageSize);
+            }
 
             try
             {
