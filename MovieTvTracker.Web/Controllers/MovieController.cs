@@ -6,6 +6,7 @@ using MovieTvTracker.Web.Class;
 using MovieTvTracker.Web.Interfaces;
 using TmdbApi.Lib.Class;
 using Microsoft.EntityFrameworkCore;
+using TmdbApi.Lib.Enum;
 
 namespace MovieTvTracker.Web.Controllers
 {
@@ -139,21 +140,31 @@ namespace MovieTvTracker.Web.Controllers
         }
 
         /// <summary>
-        /// Process all results in the 'WatchedMedia' table that match film content, paginate the content to fit the chosen pageSize and maintain performance.
+        /// Process all results in the 'WatchedMedia' table that match film content, paginate the content to fit the chosen pageSize and maintain performance.  Filter results by a keyword provided by the user
         /// </summary>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        [HttpGet]
-        public async Task<IActionResult> GetWatchedMediaFilm(int? pageNumber)
+        public async Task<IActionResult> GetWatchedMediaFilm(int? pageNumber, Media media)
         {
             try
             {
-                IMedia media = new Media();
                 IGetStatistics stats = new GetStatistics();
 
                 media.WatchedMediaResults = new WatchedMediaResults();
-                media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => x.ContentType == "Film").OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
+
+                if (!string.IsNullOrEmpty(media.Keyword))
+                {
+                    // Aquire all the film TMDB ID values that match the provided keyword value
+                    List<Int32> matchedKeywordResults = _tmdb.ConvertIdToTitleAndCheckForKeywordMatch(_db.WatchedMedia.Where(x => x.ContentType == "Film").Select(x => x.TMDBId).ToList(), media.Keyword, Caller.Film);
+
+                    // Only paginate through the keyword matched TMDB ID values
+                    media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => matchedKeywordResults.Contains(x.TMDBId)).OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
+                }
+                else
+                {
+                    media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => x.ContentType == "Film").OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
+                }
 
                 foreach (WatchedMedia item in media.PaginatedWatchedMediaList)
                 {

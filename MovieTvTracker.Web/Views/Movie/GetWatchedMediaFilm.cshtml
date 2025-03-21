@@ -38,6 +38,14 @@
 
 <h4>My Watched Media - Film:</h4>
 
+<form method="post" asp-action="GetWatchedMediaFilm">
+
+    <input asp-for="Keyword" class="form-control inline-block-child" placeholder="Search for a film title within watched media" style="width:400px" />
+
+    <button type="submit" class="btn btn-primary inline-block-child">Filter Results&nbsp;<i class="bi bi-filter"></i></button>
+
+</form>
+
 <p></p>
 
 <partial name="_WatchedMediaFilmPaginatePartial" model="Model" />
