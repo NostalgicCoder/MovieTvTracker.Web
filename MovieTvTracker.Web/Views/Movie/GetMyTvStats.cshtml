@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "My Watched Media - TV:";
 
+    var XTvYear = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.TvYears.Select(x => x.Year).ToList());
+    var YTvYear = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.TvYears.Select(x => x.Qty).ToList());
     var XTvGenre = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.TvGenres.Select(x => x.Genre).ToList());
     var YTvGenre = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Stats.TvGenres.Select(x => x.Qty).ToList());
 }
@@ -45,9 +47,52 @@
 
     $(function() {
 
+        var xTvYear = @Html.Raw(XTvYear);
+        var yTvYear = @Html.Raw(YTvYear);
         var xTvGenre = @Html.Raw(XTvGenre);
         var yTvGenre = @Html.Raw(YTvGenre);
         var barColors = "#405b85";
+
+        new Chart("chartTvYear", {
+            type: "bar",
+            data: {
+                labels: xTvYear,
+                datasets: [{
+                    label: "Qty",
+                    backgroundColor: barColors,
+                    data: yTvYear,
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: "First Air Year Of TV Watched"
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true,
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            min: 0,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: false,
+                        }
+                    }]
+                }
+            }
+        });
 
         new Chart("chartTvGenre", {
             type: "bar",
@@ -107,6 +152,18 @@
             <li>Last month: @Model.TvLastMonth</li>
             <li>This year: @Model.TvThisYear</li>
         </ul>
+        <li>Watched TV Year Range: @Model.TvYearRange</li>
+        <li>Top 5 - Most Watched Years: @Model.TvTopFiveYears</li>
+        <li>Top 5 - Most Watched Genres: @Model.TvTopFiveGenres</li>
+        <li>Top 2 - Most Watched Decades: @Model.TvTopTwoDecades</li>
+    </div>
+</div>
+
+<p></p>
+
+<div class="card border-secondary mb-3" style="width: 100%">
+    <div class="card-body">
+        <canvas id="chartTvYear" style="height:200px"></canvas>
     </div>
 </div>
 

@@ -7,19 +7,20 @@ namespace MovieTvTracker.Web.Class
     public class GetStatistics : IGetStatistics
     {
         /// <summary>
-        /// Collect data on the release year, genre of each film title and year range watched and save it to the 'stats' object for consumption later.
+        /// Loop through all watched media film results, aquire data on the year, year range, decade, genre for consumption by the view at a later stage
         /// </summary>
         /// <param name="media"></param>
         /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public IMedia GetFilmYearsRangeAndGenres(IMedia media)
         {
-            foreach (WatchedMediaItem item in media.WatchedMediaResults.WatchedFilms)
+            try
             {
-                try
+                foreach (WatchedMediaItem item in media.WatchedMediaResults.WatchedFilms)
                 {
                     DateTime releaseYear = Convert.ToDateTime(item.ResultReturn.FilmIdResult.release_date);
 
-                    RecordFilmDecade(media.FavoriteFilmDecadeResults, releaseYear.Year);
+                    RecordMediaDecade(media.FavoriteMediaDecadeResults, releaseYear.Year);
 
                     if (media.Stats.FilmYears.Any(x => x.Year == releaseYear.Year))
                     {
@@ -27,60 +28,84 @@ namespace MovieTvTracker.Web.Class
                     }
                     else
                     {
-                        media.Stats.FilmYears.Add(new FilmYear() { Year = releaseYear.Year, Qty = 1 });
+                        media.Stats.FilmYears.Add(new ContentYear() { Year = releaseYear.Year, Qty = 1 });
                     }
-                }
-                catch (Exception ex)
-                {
-                    // Handle any bad data issues from conversion of 'release_date' to DateTime yet still process working resuls
-                    // TODO: Add error handling
+
+                    foreach (Genre genre in item.ResultReturn.FilmIdResult.genres)
+                    {
+                        if (media.Stats.FilmGenres.Any(x => x.Genre == genre.name))
+                        {
+                            media.Stats.FilmGenres.Where(x => x.Genre == genre.name).Select(x => x.Qty = x.Qty + 1).ToList();
+                        }
+                        else
+                        {
+                            media.Stats.FilmGenres.Add(new ContentGenre() { Genre = genre.name, Qty = 1 });
+                        }
+                    }
                 }
 
-                foreach (Genre genre in item.ResultReturn.FilmIdResult.genres)
-                {
-                    if (media.Stats.FilmGenres.Any(x => x.Genre == genre.name))
-                    {
-                        media.Stats.FilmGenres.Where(x => x.Genre == genre.name).Select(x => x.Qty = x.Qty + 1).ToList();
-                    }
-                    else
-                    {
-                        media.Stats.FilmGenres.Add(new ContentGenre() { Genre = genre.name, Qty = 1 });
-                    }
-                }
+                media.Stats.FilmYears = media.Stats.FilmYears.OrderBy(x => x.Year).ToList();
+                media.Stats.FilmGenres = media.Stats.FilmGenres.OrderByDescending(x => x.Qty).ToList();
+                media.FilmYearRange = string.Format("{0} > {1}", media.Stats.FilmYears.First().Year.ToString(), media.Stats.FilmYears.Last().Year.ToString());
+
+                GetFilmTopYearsGenresDecades(media);
             }
-
-            media.Stats.FilmYears = media.Stats.FilmYears.OrderBy(x => x.Year).ToList();
-            media.Stats.FilmGenres = media.Stats.FilmGenres.OrderByDescending(x => x.Qty).ToList();
-            media.YearRange = string.Format("{0} > {1}", media.Stats.FilmYears.First().Year.ToString(), media.Stats.FilmYears.Last().Year.ToString());
-
-            GetTopYearsGenresDecades(media);
+            catch (Exception ex)
+            {
+                throw new Exception("GetFilmYearsRangeAndGenres", ex);
+            }
 
             return media;
         }
 
         /// <summary>
-        /// Collect data on the genre of each TV title watched and save it to the 'stats' object for consumption later.
+        /// Loop through all watched media TV results, aquire data on the year, year range, decade, genre for consumption by the view at a later stage
         /// </summary>
         /// <param name="media"></param>
         /// <returns></returns>
-        public IMedia GetTvGenres(IMedia media)
+        /// <exception cref="Exception"></exception>
+        public IMedia GetTvYearsRangeAndGenres(IMedia media)
         {
-            foreach (WatchedMediaItem item in media.WatchedMediaResults.WatchedTV)
+            try
             {
-                foreach (Genre genre in item.ResultReturn.TvIdResult.genres)
+                foreach (WatchedMediaItem item in media.WatchedMediaResults.WatchedTV)
                 {
-                    if (media.Stats.TvGenres.Any(x => x.Genre == genre.name))
+                    DateTime releaseYear = Convert.ToDateTime(item.ResultReturn.TvIdResult.first_air_date);
+
+                    RecordMediaDecade(media.FavoriteMediaDecadeResults, releaseYear.Year);
+
+                    if (media.Stats.TvYears.Any(x => x.Year == releaseYear.Year))
                     {
-                        media.Stats.TvGenres.Where(x => x.Genre == genre.name).Select(x => x.Qty = x.Qty + 1).ToList();
+                        media.Stats.TvYears.Where(x => x.Year == releaseYear.Year).Select(x => x.Qty = x.Qty + 1).ToList();
                     }
                     else
                     {
-                        media.Stats.TvGenres.Add(new ContentGenre() { Genre = genre.name, Qty = 1 });
+                        media.Stats.TvYears.Add(new ContentYear() { Year = releaseYear.Year, Qty = 1 });
+                    }
+
+                    foreach (Genre genre in item.ResultReturn.TvIdResult.genres)
+                    {
+                        if (media.Stats.TvGenres.Any(x => x.Genre == genre.name))
+                        {
+                            media.Stats.TvGenres.Where(x => x.Genre == genre.name).Select(x => x.Qty = x.Qty + 1).ToList();
+                        }
+                        else
+                        {
+                            media.Stats.TvGenres.Add(new ContentGenre() { Genre = genre.name, Qty = 1 });
+                        }
                     }
                 }
-            }
 
-            media.Stats.TvGenres = media.Stats.TvGenres.OrderByDescending(x => x.Qty).ToList();
+                media.Stats.TvYears = media.Stats.TvYears.OrderBy(x => x.Year).ToList();
+                media.Stats.TvGenres = media.Stats.TvGenres.OrderByDescending(x => x.Qty).ToList();
+                media.TvYearRange = string.Format("{0} > {1}", media.Stats.TvYears.First().Year.ToString(), media.Stats.TvYears.Last().Year.ToString());
+
+                GetTvTopYearsGenresDecades(media);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("GetTvYearsRangeAndGenres", ex);
+            }
 
             return media;
         }
@@ -122,56 +147,69 @@ namespace MovieTvTracker.Web.Class
         }
 
         /// <summary>
-        /// Get the top 5 film years/genres and top 2 film decades and save them to the model
+        /// Turn the collected film result data into string representations for display within the relevant view, filter out genres not wanted for display due to being very common.
         /// </summary>
         /// <param name="media"></param>
-        public void GetTopYearsGenresDecades(IMedia media)
+        public void GetFilmTopYearsGenresDecades(IMedia media)
         {
-            media.TopFiveYears = string.Join(", ", media.Stats.FilmYears.OrderByDescending(x => x.Qty).Take(5).Select(x => x.Year));
+            media.FilmTopFiveYears = string.Join(", ", media.Stats.FilmYears.OrderByDescending(x => x.Qty).Take(5).Select(x => x.Year));
 
-            media.TopFiveGenres = string.Join(", ", media.Stats.FilmGenres.Where(x => x.Genre != "Drama" && x.Genre != "Thriller").OrderByDescending(x => x.Qty).Take(5).Select(x => x.Genre));
+            media.FilmTopFiveGenres = string.Join(", ", media.Stats.FilmGenres.Where(x => x.Genre != "Drama" && x.Genre != "Thriller").OrderByDescending(x => x.Qty).Take(5).Select(x => x.Genre));
 
-            media.TopTwoDecades = string.Join(", ", media.FavoriteFilmDecadeResults.OrderByDescending(x => x.Count).Take(2).Select(x => x.DecadeName));
+            media.FilmTopTwoDecades = string.Join(", ", media.FavoriteMediaDecadeResults.OrderByDescending(x => x.Count).Take(2).Select(x => x.DecadeName));
         }
 
         /// <summary>
-        /// Record what decade the current film year result falls into and save it to a model for later data consumption
+        /// Turn the collected TV result data into string representations for display within the relevant view, filter out genres not wanted for display due to being very common.
         /// </summary>
-        /// <param name="favoriteFilmDecadeColl"></param>
+        /// <param name="media"></param>
+        public void GetTvTopYearsGenresDecades(IMedia media)
+        {
+            media.TvTopFiveYears = string.Join(", ", media.Stats.TvYears.OrderByDescending(x => x.Qty).Take(5).Select(x => x.Year));
+
+            media.TvTopFiveGenres = string.Join(", ", media.Stats.TvGenres.Where(x => x.Genre != "Drama" && x.Genre != "Thriller").OrderByDescending(x => x.Qty).Take(5).Select(x => x.Genre));
+
+            media.TvTopTwoDecades = string.Join(", ", media.FavoriteMediaDecadeResults.OrderByDescending(x => x.Count).Take(2).Select(x => x.DecadeName));
+        }
+
+        /// <summary>
+        /// Decide what decade each year result fits into and count the quantity of results for each
+        /// </summary>
+        /// <param name="favoriteMediaDecadeResults"></param>
         /// <param name="year"></param>
-        public void RecordFilmDecade(List<FavoriteFilmDecade> favoriteFilmDecadeResults, int year)
+        public void RecordMediaDecade(List<FavoriteDecade> favoriteMediaDecadeResults, int year)
         {
             if (year >= 1950 && year <= 1959)
             {
-                favoriteFilmDecadeResults.Where(w => w.DecadeName == "50s").ToList().ForEach(x => x.Count = x.Count + 1);
+                favoriteMediaDecadeResults.Where(w => w.DecadeName == "50s").ToList().ForEach(x => x.Count = x.Count + 1);
             }
             else if (year >= 1960 && year <= 1969)
             {
-                favoriteFilmDecadeResults.Where(w => w.DecadeName == "60s").ToList().ForEach(x => x.Count = x.Count + 1);
+                favoriteMediaDecadeResults.Where(w => w.DecadeName == "60s").ToList().ForEach(x => x.Count = x.Count + 1);
             }
             else if (year >= 1970 && year <= 1979)
             {
-                favoriteFilmDecadeResults.Where(w => w.DecadeName == "70s").ToList().ForEach(x => x.Count = x.Count + 1);
+                favoriteMediaDecadeResults.Where(w => w.DecadeName == "70s").ToList().ForEach(x => x.Count = x.Count + 1);
             }
             else if (year >= 1980 && year <= 1989)
             {
-                favoriteFilmDecadeResults.Where(w => w.DecadeName == "80s").ToList().ForEach(x => x.Count = x.Count + 1);
+                favoriteMediaDecadeResults.Where(w => w.DecadeName == "80s").ToList().ForEach(x => x.Count = x.Count + 1);
             }
             else if (year >= 1990 && year <= 1999)
             {
-                favoriteFilmDecadeResults.Where(w => w.DecadeName == "90s").ToList().ForEach(x => x.Count = x.Count + 1);
+                favoriteMediaDecadeResults.Where(w => w.DecadeName == "90s").ToList().ForEach(x => x.Count = x.Count + 1);
             }
             else if (year >= 2000 && year <= 2009)
             {
-                favoriteFilmDecadeResults.Where(w => w.DecadeName == "2000s").ToList().ForEach(x => x.Count = x.Count + 1);
+                favoriteMediaDecadeResults.Where(w => w.DecadeName == "2000s").ToList().ForEach(x => x.Count = x.Count + 1);
             }
             else if (year >= 2010 && year <= 2019)
             {
-                favoriteFilmDecadeResults.Where(w => w.DecadeName == "2010s").ToList().ForEach(x => x.Count = x.Count + 1);
+                favoriteMediaDecadeResults.Where(w => w.DecadeName == "2010s").ToList().ForEach(x => x.Count = x.Count + 1);
             }
             else if (year >= 2020 && year <= 2029)
             {
-                favoriteFilmDecadeResults.Where(w => w.DecadeName == "2020s").ToList().ForEach(x => x.Count = x.Count + 1);
+                favoriteMediaDecadeResults.Where(w => w.DecadeName == "2020s").ToList().ForEach(x => x.Count = x.Count + 1);
             }
         }
     }

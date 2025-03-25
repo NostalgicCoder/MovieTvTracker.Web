@@ -5,9 +5,10 @@ namespace MovieTvTracker.Web.Interfaces
     public interface IGetStatistics
     {
         IMedia GetFilmYearsRangeAndGenres(IMedia media);
-        IMedia GetTvGenres(IMedia media);
+        IMedia GetTvYearsRangeAndGenres(IMedia media);
         IMedia GetQtyViewingStats(IMedia media);
-        void GetTopYearsGenresDecades(IMedia media);
-        void RecordFilmDecade(List<FavoriteFilmDecade> favoriteFilmDecadeColl, int year);
+        void GetFilmTopYearsGenresDecades(IMedia media);
+        void GetTvTopYearsGenresDecades(IMedia media);
+        void RecordMediaDecade(List<FavoriteDecade> favoriteMediaDecadeResults, int year);
     }
 }

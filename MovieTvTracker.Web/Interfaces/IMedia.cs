@@ -10,7 +10,7 @@ namespace MovieTvTracker.Web.Interfaces
         PaginatedList<FavoriteActor> PaginatedFavoriteActorList { get; set; }
         PaginatedList<WatchedMedia> PaginatedWatchedMediaList { get; set; }
         List<ResultReturn> FavoriteActorResults { get; set; }
-        List<FavoriteFilmDecade> FavoriteFilmDecadeResults { get; set; }
+        List<FavoriteDecade> FavoriteMediaDecadeResults { get; set; }
         ResultReturn TMDBData { get; set; }
         WatchedMediaResults WatchedMediaResults { get; set; }
         Stats Stats { get; set; }
@@ -22,10 +22,14 @@ namespace MovieTvTracker.Web.Interfaces
         Int32 FilmsLastMonth { get; set; }
         Int32 TvThisMonth { get; set; }
         Int32 TvLastMonth { get; set; }
-        string TopTwoDecades { get; set; }
-        string TopFiveYears { get; set; }
-        string TopFiveGenres { get; set; }
-        string YearRange { get; set; }
+        string FilmTopTwoDecades { get; set; }
+        string FilmTopFiveYears { get; set; }
+        string FilmTopFiveGenres { get; set; }
+        string TvTopTwoDecades { get; set; }
+        string TvTopFiveYears { get; set; }
+        string TvTopFiveGenres { get; set; }
+        string FilmYearRange { get; set; }
+        string TvYearRange { get; set; }
         string SelectedContentType { get; set; }
         string Keyword { get; set; }
         bool EnglishResultOnly { get; set; }

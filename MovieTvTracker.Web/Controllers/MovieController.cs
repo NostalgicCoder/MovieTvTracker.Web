@@ -128,7 +128,7 @@ namespace MovieTvTracker.Web.Controllers
                     });
                 }
 
-                media = stats.GetTvGenres(media);
+                media = stats.GetTvYearsRangeAndGenres(media);
                 media = stats.GetQtyViewingStats(media);
 
                 return View(media);
