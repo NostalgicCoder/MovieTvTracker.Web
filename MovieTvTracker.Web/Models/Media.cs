@@ -31,7 +31,8 @@ namespace MovieTvTracker.Web.Models
         public string FilmYearRange { get; set; }
         public string TvYearRange { get; set; }
         public string SelectedContentType { get; set; }
-        public string Keyword { get; set; }
+        public string SearchKeyword { get; set; }
+        public string SearchYear { get; set; }
         public bool EnglishResultOnly { get; set; }
 
         public Media()

@@ -31,7 +31,8 @@ namespace MovieTvTracker.Web.Interfaces
         string FilmYearRange { get; set; }
         string TvYearRange { get; set; }
         string SelectedContentType { get; set; }
-        string Keyword { get; set; }
+        string SearchKeyword { get; set; }
+        string SearchYear { get; set; }
         bool EnglishResultOnly { get; set; }
     }
 }

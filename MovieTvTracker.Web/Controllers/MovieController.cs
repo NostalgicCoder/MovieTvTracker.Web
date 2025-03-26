@@ -154,10 +154,10 @@ namespace MovieTvTracker.Web.Controllers
 
                 media.WatchedMediaResults = new WatchedMediaResults();
 
-                if (!string.IsNullOrEmpty(media.Keyword))
+                if (!string.IsNullOrEmpty(media.SearchKeyword) || !string.IsNullOrEmpty(media.SearchYear))
                 {
-                    // Aquire all the film TMDB ID values that match the provided keyword value
-                    List<Int32> matchedKeywordResults = _tmdb.ConvertIdToTitleAndCheckForKeywordMatch(_db.WatchedMedia.Where(x => x.ContentType == "Film").Select(x => x.TMDBId).ToList(), media.Keyword, Caller.Film);
+                    // Aquire all the film TMDB ID values that match the provided keyword / year value
+                    List<Int32> matchedKeywordResults = _tmdb.GetTmdbIdsThatMatchKeywordOrYearCriteria(_db.WatchedMedia.Where(x => x.ContentType == "Film").Select(x => x.TMDBId).ToList(), Caller.Film, media.SearchKeyword, media.SearchYear);
 
                     // Only paginate through the keyword matched TMDB ID values
                     media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => matchedKeywordResults.Contains(x.TMDBId)).OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
@@ -199,10 +199,10 @@ namespace MovieTvTracker.Web.Controllers
 
                 media.WatchedMediaResults = new WatchedMediaResults();
 
-                if (!string.IsNullOrEmpty(media.Keyword))
+                if (!string.IsNullOrEmpty(media.SearchKeyword) || !string.IsNullOrEmpty(media.SearchYear))
                 {
-                    // Aquire all the film TMDB ID values that match the provided keyword value
-                    List<Int32> matchedKeywordResults = _tmdb.ConvertIdToTitleAndCheckForKeywordMatch(_db.WatchedMedia.Where(x => x.ContentType == "TV").Select(x => x.TMDBId).ToList(), media.Keyword, Caller.TV);
+                    // Aquire all the film TMDB ID values that match the provided keyword / year value
+                    List<Int32> matchedKeywordResults = _tmdb.GetTmdbIdsThatMatchKeywordOrYearCriteria(_db.WatchedMedia.Where(x => x.ContentType == "TV").Select(x => x.TMDBId).ToList(), Caller.TV, media.SearchKeyword, media.SearchYear);
 
                     // Only paginate through the keyword matched TMDB ID values
                     media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => matchedKeywordResults.Contains(x.TMDBId)).OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
@@ -240,10 +240,10 @@ namespace MovieTvTracker.Web.Controllers
         {
             media.FavoriteActorTotalCount = await _db.FavoriteActor.CountAsync(); ;
 
-            if (!string.IsNullOrEmpty(media.Keyword))
+            if (!string.IsNullOrEmpty(media.SearchKeyword))
             {
                 // Aquire all the film TMDB ID values that match the provided keyword value
-                List<Int32> matchedKeywordResults = _tmdb.ConvertIdToTitleAndCheckForKeywordMatch(_db.FavoriteActor.Select(x => x.TMDBId).ToList(), media.Keyword, Caller.Actor);
+                List<Int32> matchedKeywordResults = _tmdb.GetTmdbIdsThatMatchKeywordOrYearCriteria(_db.FavoriteActor.Select(x => x.TMDBId).ToList(), Caller.Actor, media.SearchKeyword);
 
                 // Only paginate through the keyword matched TMDB ID values
                 media.PaginatedFavoriteActorList = await PaginatedList<FavoriteActor>.CreateAsync(_db.FavoriteActor.Where(x => matchedKeywordResults.Contains(x.TMDBId)), pageNumber ?? 1, _pageSize);
