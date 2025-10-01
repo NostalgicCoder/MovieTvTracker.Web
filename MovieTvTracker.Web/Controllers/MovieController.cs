@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MovieTvTracker.Web.Models;
-using MovieTvTracker.Web.Data;
-using TmdbApi.Lib.Interfaces;
-using MovieTvTracker.Web.Class;
-using MovieTvTracker.Web.Interfaces;
-using TmdbApi.Lib.Class;
 using Microsoft.EntityFrameworkCore;
+using MovieTvTracker.Web.Class;
+using MovieTvTracker.Web.Data;
+using MovieTvTracker.Web.Interfaces;
+using MovieTvTracker.Web.Models;
+using TmdbApi.Lib.Class;
 using TmdbApi.Lib.Enum;
+using TmdbApi.Lib.Interfaces;
 
 namespace MovieTvTracker.Web.Controllers
 {
@@ -14,6 +14,7 @@ namespace MovieTvTracker.Web.Controllers
     {
         private ITmdb _tmdb;
 
+        private PerformValidation _performValidation;
         private ErrorViewModel _errorViewModel;
 
         private readonly ApplicationDbContext _db;
@@ -27,11 +28,12 @@ namespace MovieTvTracker.Web.Controllers
         {
             _db = db;
             _tmdb = tmdb;
+            _performValidation = new PerformValidation();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Index(string keyword, bool EnglishResultOnly)
+        public IActionResult Index(string SearchKeyword, bool EnglishResultOnly)
         {
             IMedia media = new Media();
 
@@ -39,7 +41,7 @@ namespace MovieTvTracker.Web.Controllers
 
             if(ModelState.IsValid)
             {
-                media.TMDBData = _tmdb.SearchForFilmTvPerson(keyword);
+                media.TMDBData = _tmdb.SearchForFilmTvPerson(SearchKeyword);
              
                 if(media.EnglishResultOnly)
                 {
@@ -146,7 +148,8 @@ namespace MovieTvTracker.Web.Controllers
         /// <param name="media"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<IActionResult> GetWatchedMediaFilm(int? pageNumber, Media media)
+        //public async Task<IActionResult> GetWatchedMediaFilm(int? pageNumber, Media media)
+        public IActionResult GetWatchedMediaFilm(int? pageNumber, Media media)
         {
             try
             {
@@ -154,17 +157,25 @@ namespace MovieTvTracker.Web.Controllers
 
                 media.WatchedMediaResults = new WatchedMediaResults();
 
-                if (!string.IsNullOrEmpty(media.SearchKeyword) || !string.IsNullOrEmpty(media.SearchYear))
+                if (!string.IsNullOrEmpty(media.SearchKeyword) && string.IsNullOrEmpty(media.SearchYear))
                 {
-                    // Aquire all the film TMDB ID values that match the provided keyword / year value
-                    List<Int32> matchedKeywordResults = _tmdb.GetTmdbIdsThatMatchKeywordOrYearCriteria(_db.WatchedMedia.Where(x => x.ContentType == "Film").Select(x => x.TMDBId).ToList(), Caller.Film, media.SearchKeyword, media.SearchYear);
-
-                    // Only paginate through the keyword matched TMDB ID values
-                    media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => matchedKeywordResults.Contains(x.TMDBId)).OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
+                    //Keyword
+                    media = SetPaginatedFilmResults(pageNumber, media, true).Result;
                 }
-                else
+                else if (string.IsNullOrEmpty(media.SearchKeyword) && !string.IsNullOrEmpty(media.SearchYear))
                 {
-                    media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => x.ContentType == "Film").OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
+                    //Year
+                    media = _performValidation.ValidateSearchYear(media.SearchYear) ? SetPaginatedFilmResults(pageNumber, media, true).Result : SetPaginatedFilmResults(pageNumber, media, false).Result;
+                }
+                else if (!string.IsNullOrEmpty(media.SearchKeyword) && !string.IsNullOrEmpty(media.SearchYear))
+                {
+                    //Both
+                    media = _performValidation.ValidateSearchYear(media.SearchYear) ? SetPaginatedFilmResults(pageNumber, media, true).Result : SetPaginatedFilmResults(pageNumber, media, false).Result;
+                }
+                else 
+                {
+                    // None are set
+                    media = SetPaginatedFilmResults(pageNumber, media, false).Result;
                 }
 
                 foreach (WatchedMedia item in media.PaginatedWatchedMediaList)
@@ -182,6 +193,22 @@ namespace MovieTvTracker.Web.Controllers
             {
                 throw new Exception("GetWatchedMediaFilm", ex);
             }
+        }
+
+        private async Task<Media> SetPaginatedFilmResults(int? pageNumber, Media media, bool filterResults)
+        {
+            if(filterResults)
+            {
+                List<Int32> matchedKeywordResults = _tmdb.GetTmdbIdsThatMatchKeywordOrYearCriteria(_db.WatchedMedia.Where(x => x.ContentType == "Film").Select(x => x.TMDBId).ToList(), Caller.Film, media.SearchKeyword, media.SearchYear);
+
+                media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => matchedKeywordResults.Contains(x.TMDBId)).OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
+            }
+            else
+            {
+                media.PaginatedWatchedMediaList = await PaginatedList<WatchedMedia>.CreateAsync(_db.WatchedMedia.Where(x => x.ContentType == "Film").OrderByDescending(x => x.LastWatched), pageNumber ?? 1, _pageSize);
+            }
+
+            return media;
         }
 
         /// <summary>
