@@ -126,7 +126,7 @@ namespace MovieTvTracker.Web.Class
             }
             else
             {
-                media.FilmsLastMonth = media.WatchedMediaResults.WatchedFilms.Where(item => item.WatchedMedia.LastWatched.Month == (DateTime.Now.Month - 1)).Count();
+                media.FilmsLastMonth = media.WatchedMediaResults.WatchedFilms.Where(item => item.WatchedMedia.LastWatched.Month == (DateTime.Now.Month - 1) && item.WatchedMedia.LastWatched.Year == (DateTime.Now.Year)).Count();
             }
 
             if (DateTime.Now.Month == 1)
@@ -135,7 +135,7 @@ namespace MovieTvTracker.Web.Class
             }
             else
             {
-                media.TvLastMonth = media.WatchedMediaResults.WatchedTV.Where(item => item.WatchedMedia.LastWatched.Month == (DateTime.Now.Month - 1)).Count();
+                media.TvLastMonth = media.WatchedMediaResults.WatchedTV.Where(item => item.WatchedMedia.LastWatched.Month == (DateTime.Now.Month - 1) && item.WatchedMedia.LastWatched.Year == DateTime.Now.Year).Count();
             }
 
             media.FilmsThisYear = media.WatchedMediaResults.WatchedFilms.Where(item => item.WatchedMedia.LastWatched.Year == DateTime.Now.Year).Count();
